@@ -1,10 +1,17 @@
 pipeline {
     agent any
     tools {
-        maven 'Maven 3.9'  // Name configured in Jenkins Global Tools
-        jdk 'JDK 17'       // Name configured in Jenkins Global Tools
+        maven 'Maven 3.9'   // Make sure this matches Jenkins Global Tool Configuration
+        jdk 'JDK17'
+         // Make sure this matches Jenkins Global Tool Configuration
     }
     stages {
+        stage('Clean Workspace') {
+            steps {
+                echo 'Cleaning workspace...'
+                cleanWs()
+            }
+        }
         stage('Checkout') {
             steps {
                 echo 'Checking out source code from GitHub...'
@@ -14,13 +21,25 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the Java application with Maven...'
-                sh 'mvn clean compile'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn clean compile'
+                    } else {
+                        bat 'mvn clean compile'
+                    }
+                }
             }
         }
         stage('Unit Test') {
             steps {
                 echo 'Running unit tests...'
-                sh 'mvn test'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn test'
+                    } else {
+                        bat 'mvn test'
+                    }
+                }
             }
             post {
                 always {
@@ -32,7 +51,13 @@ pipeline {
         stage('Package') {
             steps {
                 echo 'Packaging the application...'
-                sh 'mvn package -DskipTests'
+                script {
+                    if (isUnix()) {
+                        sh 'mvn package -DskipTests'
+                    } else {
+                        bat 'mvn package -DskipTests'
+                    }
+                }
             }
             post {
                 success {
