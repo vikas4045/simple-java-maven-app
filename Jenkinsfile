@@ -1,34 +1,23 @@
 pipeline {
-    agent any
-
-    stages {
-        stage('Checkout') {
-            steps {
-                echo 'Checking out source code...'
-                checkout scm
-            }
+    agent {
+        docker {
+            image 'maven:3.9.9-eclipse-temurin-17'
         }
-
+    }
+    stages {
         stage('Build') {
             steps {
                 sh 'mvn clean compile'
             }
         }
-
-        stage('Unit Test') {
+        stage('Test') {
             steps {
                 sh 'mvn test'
             }
-            post {
-                always {
-                    junit 'target/surefire-reports/*.xml'
-                }
-            }
         }
-
         stage('Package') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh 'mvn package'
             }
         }
     }
